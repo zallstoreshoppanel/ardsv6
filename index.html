@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>ARD-ZALLS — Panel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+/* Disable text selection and zooming */
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: pan-y;
+    position: relative;
+    padding-bottom: 70px; /* Space for the navbar */
+}
+
+/* General Styling */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(180deg, #0d0d1b, #1a0935);
+    color: #fff;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.card {
+    width: 90%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 20px;
+    background: rgba(30, 27, 46, 0.95);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    transition: 0.3s;
+    margin-bottom: 20px;
+}
+h3 {
+    margin: 0 0 10px;
+    font-size: 24px;
+}
+h2 {
+    font-size: 30px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+h4 {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: normal;
+    font-size: 18px;
+}
+.input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #2a253d;
+    color: #fff;
+    margin-top: 14px;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box;
+}
+.input:focus {
+    box-shadow: 0 0 0 2px #7b5cff;
+}
+.btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(90deg, #7b5cff, #c36fff);
+    color: #fff;
+    font-weight: 700;
+    margin-top: 18px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.3s;
+}
+.btn:hover {
+    opacity: 0.9;
+}
+.muted {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    margin-top: 12px;
+}
+a {
+    color: #9bd1ff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Pop-up and Toast Styling */
+#toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    font-size: 16px;
+    color: white;
+    z-index: 9999;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    animation: slideInUp 0.5s forwards, fadeOut 0.5s forwards 2.5s;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+#popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9998;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#popupBar {
+    width: 220px;
+    height: 20px;
+    background: #2a253d;
+    border-radius: 10px;
+    overflow: hidden;
+    display: none;
+}
+#progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #7b5cff, #c36fff);
+    transition: width 0.2s linear;
+}
+#popupText {
+    color: white;
+    font-size: 20px;
+    margin-top: 14px;
+    text-align: center;
+}
+#popupText i {
+    font-size: 50px;
+    color: #4CAF50;
+}
+.popup-box {
+    background: rgba(30, 27, 46, 0.95);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+/* Dashboard & Navbar Styling */
+.banner {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+.dash-btn {
+    font-family: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.3s;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 10px;
+}
+.dash-btn:hover {
+    opacity: 0.8;
+}
+.dash-btn.bug {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #7b5cff;
+}
+.dash-btn.ddos {
+    background: rgba(255, 0, 0, 0.2);
+    border-color: #ff6f6f;
+    color: #ff6f6f;
+}
+.attack-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+.attack-btn {
+    font-family: inherit;
+    background: #2a253d;
+    color: #fff;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 14px;
+    font-weight: bold;
+}
+.attack-btn:hover {
+    background: #3e3852;
+}
+.ddos-btn {
+    background: linear-gradient(90deg, #ff4c4c, #ff8a8a);
+    color: #fff;
+    margin-top: 20px;
+    font-weight: 700;
+}
+
+/* History Page */
+.history-item {
+    background: #2a253d;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+.history-item p {
+    margin: 0;
+    font-size: 14px;
+}
+.history-item .date {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 5px;
+}
+.history-item .method {
+    font-weight: bold;
+    color: #7b5cff;
+}
+
+/* Navbar Styling */
+#navbar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(30, 27, 46, 0.95);
+    padding: 10px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+}
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.nav-item.active {
+    color: #7b5cff;
+}
+.nav-item i {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+/* New CSS for file button and profile page */
+.file-upload-btn {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    cursor: pointer;
+    background: linear-gradient(90deg, #7b5cff, #c36fff);
+    color: #fff;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    margin-top: 18px;
+    transition: 0.3s;
+    width: 100%;
+    text-align: center;
+}
+.file-upload-btn:hover {
+    opacity: 0.9;
+}
+.file-upload-btn input[type=file] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+.profile-info {
+    text-align: left;
+    margin-top: 20px;
+    padding: 15px;
+    background: #2a253d;
+    border-radius: 12px;
+}
+.profile-info p {
+    margin: 5px 0;
+}
+.profile-info p strong {
+    color: #c36fff;
+}
+.profile-pic {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid #7b5cff;
+}
+
+/* Toast Notif */
+#toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    font-size: 16px;
+    color: white;
+    z-index: 9999;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+}
+.toast-success {
+    background: #4CAF50;
+}
+.toast-error {
+    background: #F44336;
+}
+</style>
+</head>
+<body>
+
+<div class="main-content" style="padding-top: 20px;">
+    <div class="card" id="loginCard">
+        <h3>Login ARD-ZALLS</h3>
+        <input id="loginEmail" class="input" placeholder="Email" />
+        <input id="loginPassword" class="input" placeholder="Password" type="password" />
+        <button id="loginBtn" class="btn">Login</button>
+        <p class="muted">Belum punya akun? <a href="#" id="showRegisterLink">Buat Akun</a></p>
+    </div>
+
+    <div class="card" id="registerCard" style="display:none;">
+        <h3>Buat Akun Baru</h3>
+        <input id="registerEmail" class="input" placeholder="Email" />
+        <input id="registerPassword" class="input" placeholder="Password" type="password" />
+        <button id="registerBtn" class="btn">Daftar</button>
+        <p class="muted">Sudah punya akun? <a href="#" id="showLoginLink">Login</a></p>
+    </div>
+
+    <div id="homePage" style="display:none;">
+        <div class="card" id="saturnxCard">
+            <img src="https://files.catbox.moe/obdbvf.png" class="banner" alt="Banner ARD-ZALLS">
+            <h2>ARD-ZALLS</h2>
+            
+            <button class="dash-btn bug" id="bugDashBtn">
+                <i class="fas fa-bug"></i> Bug Dashboard
+            </button>
+            
+            <button class="dash-btn ddos" id="ddosDashBtn">
+                <i class="fas fa-bolt"></i> DDOS Dashboard
+            </button>
+            
+            <div class="user-info-box" style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; text-align: center;">
+                <p style="margin: 0; font-size: 14px;">Welcome, <strong id="userEmail"></strong></p>
+                <div style="font-size: 12px; color: #9a9a9a; margin-top: 5px;">ADMIN</div>
+            </div>
+            
+            <h4>Simulasi Pengiriman Laporan</h4>
+            <div class="attack-methods">
+                <button class="attack-btn" data-method="forceclose"><i class="fas fa-power-off"></i> FORCECLOSE</button>
+                <button class="attack-btn" data-method="uibug"><i class="fas fa-bug"></i> UI BUG</button>
+                <button class="attack-btn" data-method="delay"><i class="fas fa-clock"></i> DELAY</button>
+                <button class="attack-btn" data-method="ios"><i class="fab fa-apple"></i> IOS</button>
+            </div>
+            
+            <input id="bugTargetNumber" class="input" placeholder="Target Number: 628xxxxxxxxxx" style="margin-top: 20px;"/>
+            <select id="bugAttackMethodSelect" class="input" style="margin-top: 10px;">
+                <option value="">Pilih Metode</option>
+                <option value="forceclose">FORCECLOSE</option>
+                <option value="uibug">UI BUG</option>
+                <option value="delay">DELAY</option>
+                <option value="ios">IOS</option>
+            </select>
+            
+            <button id="bugLaunchBtn" class="btn" style="margin-top: 20px;">
+                <i class="fas fa-bolt"></i> KIRIM LAPORAN
+            </button>
+        </div>
+
+        <div class="card" id="ddosCard" style="display:none;">
+            <h2>Simulasi DDOS</h2>
+
+            <button class="dash-btn" id="bugFromDdosBtn" style="margin-top: 20px;">
+                <i class="fas fa-bug"></i> ARD-ZALLS Dashboard
+            </button>
+            <button class="dash-btn ddos" style="background:none; border: 1px solid #ff6f6f;">
+                <i class="fas fa-bolt"></i> DDOS Dashboard
+            </button>
+            
+            <div class="user-info-box" style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; text-align: center;">
+                <p style="margin: 0; font-size: 14px;">Welcome, <strong id="ddosUserEmail"></strong></p>
+                <div style="font-size: 12px; color: #9a9a9a; margin-top: 5px;">ADMIN</div>
+            </div>
+
+            <input id="ddosTargetIP" class="input" placeholder="Target IP / Domain" style="margin-top: 20px;"/>
+            
+            <select id="ddosMethod" class="input">
+                <option value="">Pilih Metode</option>
+                <option value="http-flood">HTTP Flood</option>
+                <option value="udp-flood">UDP Flood</option>
+                <option value="syn-flood">SYN Flood</option>
+            </select>
+            
+            <button id="ddosLaunchBtn" class="btn ddos-btn">
+                <i class="fas fa-radiation"></i> JALANKAN SIMULASI
+            </button>
+        </div>
+    </div>
+
+    <div id="historyPage" class="card" style="display:none;">
+        <h2>Riwayat Aktivitas</h2>
+        <div id="historyList">
+            </div>
+        <p id="noHistory" class="muted" style="display: none;">Belum ada riwayat aktivitas.</p>
+    </div>
+
+    <div id="profilePage" class="card" style="display:none;">
+        <h2>Profil Pengguna</h2>
+        <img id="profilePic" class="profile-pic" src="https://via.placeholder.com/100.png?text=User" alt="Foto Profil">
+        <div class="profile-info">
+            <p><strong>Nama:</strong> <span id="profileName"></span></p>
+            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+            <p><strong>Tanggal Login:</strong> <span id="profileLoginDate"></span></p>
+            <p><strong>Status:</strong> <span id="profileStatus"></span></p>
+        </div>
+        <div class="file-upload-btn">
+            <input type="file" id="profilePicInput" accept="image/*">
+            <span id="fileBtnText"><i class="fas fa-cloud-upload-alt"></i> Unggah Foto Profil</span>
+        </div>
+        <button id="saveProfileBtn" class="btn">Simpan Perubahan</button>
+    </div>
+</div>
+
+<div id="popup">
+    <div class="popup-box">
+        <p id="popupText"></p>
+        <div id="popupBar" style="display: none;">
+            <div id="progress"></div>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<div id="navbar" style="display: none;">
+    <div class="nav-item active" id="homeNavBtn">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" id="historyNavBtn">
+        <i class="fas fa-history"></i>
+        <span>Riwayat</span>
+    </div>
+    <div class="nav-item" id="profileNavBtn">
+        <i class="fas fa-user"></i>
+        <span>Profil</span>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+// Konfigurasi Firebase Anda yang telah digabungkan
+const firebaseConfig = {
+    apiKey: "AIzaSyArE6B5jQCSECpOusTxrOYmUsjeFEa17YI",
+    authDomain: "bugwa-1fc47.firebaseapp.com",
+    projectId: "bugwa-1fc47",
+    storageBucket: "bugwa-1fc47.firebasestorage.app",
+    messagingSenderId: "309575475227",
+    appId: "1:309575475227:web:c2a7a9123afb30023698be"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+document.addEventListener('DOMContentLoaded', () => {
+    const loginCard = document.getElementById('loginCard');
+    const registerCard = document.getElementById('registerCard');
+    const homePage = document.getElementById('homePage');
+    const historyPage = document.getElementById('historyPage');
+    const profilePage = document.getElementById('profilePage');
+    const saturnxCard = document.getElementById('saturnxCard');
+    const ddosCard = document.getElementById('ddosCard');
+    const toast = document.getElementById('toast');
+    const popup = document.getElementById('popup');
+    const popupBar = document.getElementById('popupBar');
+    const progress = document.getElementById('progress');
+    const popupText = document.getElementById('popupText');
+    const navbar = document.getElementById('navbar');
+    const historyList = document.getElementById('historyList');
+    const noHistory = document.getElementById('noHistory');
+    const profilePic = document.getElementById('profilePic');
+    const fileBtnText = document.getElementById('fileBtnText');
+
+    // Local Storage Keys
+    const USERS_KEY = 'users';
+    const LOGGED_IN_USER_KEY = 'loggedInUser';
+    const HISTORY_KEY = 'activityHistory';
+    const PROFILE_PIC_KEY = 'profilePic';
+
+    // State Variables
+    let users = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+    let loggedInUser = null; 
+    let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+
+    // --- Helper Functions ---
+    function showToast(msg, isSuccess = false) {
+        toast.innerText = msg;
+        if (isSuccess) {
+            toast.classList.add('toast-success');
+            toast.classList.remove('toast-error');
+        } else {
+            toast.classList.add('toast-error');
+            toast.classList.remove('toast-success');
+        }
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+    
+    function showLoginToast(isSuccess) {
+        if (isSuccess) {
+            toast.innerText = 'Login Berhasil';
+            toast.classList.add('toast-success');
+            toast.classList.remove('toast-error');
+        } else {
+            toast.innerText = 'Login Gagal';
+            toast.classList.add('toast-error');
+            toast.classList.remove('toast-success');
+        }
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+    
+    function showLoadingToast() {
+        toast.innerText = 'Memeriksa Akun...';
+        toast.classList.add('toast-error');
+        toast.classList.remove('toast-success');
+        toast.style.display = 'block';
+    }
+
+    function showPage(pageId) {
+        document.querySelectorAll('.card, #homePage, #historyPage, #profilePage').forEach(page => page.style.display = 'none');
+        document.getElementById(pageId).style.display = 'block';
+        
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        if (pageId === 'homePage') {
+            document.getElementById('homeNavBtn').classList.add('active');
+            showDashboard('saturnxCard');
+        } else if (pageId === 'historyPage') {
+            document.getElementById('historyNavBtn').classList.add('active');
+            renderHistory();
+        } else if (pageId === 'profilePage') {
+            document.getElementById('profileNavBtn').classList.add('active');
+            renderProfile();
+        }
+    }
+
+    function showDashboard(dashId) {
+        document.getElementById('saturnxCard').style.display = 'none';
+        document.getElementById('ddosCard').style.display = 'none';
+        document.getElementById(dashId).style.display = 'block';
+    }
+
+    function addHistory(type, target, method) {
+        const date = new Date();
+        const historyItem = {
+            type: type,
+            target: target,
+            method: method,
+            timestamp: date.toLocaleString()
+        };
+        history.unshift(historyItem);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function renderHistory() {
+        historyList.innerHTML = '';
+        if (history.length === 0) {
+            noHistory.style.display = 'block';
+        } else {
+            noHistory.style.display = 'none';
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <p class="date">${item.timestamp}</p>
+                    <p>Aktivitas <span class="method">${item.type.toUpperCase()}</span> ke <br> ${item.target}</p>
+                    <p>Metode: <span class="method">${item.method.toUpperCase()}</span></p>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+    }
+
+    function renderProfile() {
+        if (loggedInUser) {
+            const emailName = loggedInUser.email.split('@')[0];
+            document.getElementById('profileName').innerText = emailName;
+            document.getElementById('profileEmail').innerText = loggedInUser.email || '-';
+            document.getElementById('profileLoginDate').innerText = loggedInUser.loginDate || '-';
+            document.getElementById('profileStatus').innerText = loggedInUser.isPremium ? 'Premium' : 'Gratis';
+            document.getElementById('profileStatus').style.color = loggedInUser.isPremium ? '#c36fff' : 'inherit';
+            
+            const savedProfilePic = localStorage.getItem(PROFILE_PIC_KEY);
+            if (savedProfilePic) {
+                profilePic.src = savedProfilePic;
+            } else {
+                profilePic.src = "https://via.placeholder.com/100.png?text=User";
+            }
+        }
+    }
+
+    function showLoggedInView() {
+        loginCard.style.display = 'none';
+        registerCard.style.display = 'none';
+        navbar.style.display = 'flex';
+        homePage.style.display = 'block';
+        document.getElementById('userEmail').innerText = loggedInUser.email;
+        document.getElementById('ddosUserEmail').innerText = loggedInUser.email;
+        showDashboard('saturnxCard');
+    }
+
+    // --- Event Listeners ---
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+        let email = document.getElementById('loginEmail').value.trim();
+        let password = document.getElementById('loginPassword').value.trim();
+
+        if (!email || !password) {
+            showToast('Email dan password harus diisi!', false);
+            return;
+        }
+
+        try {
+            showLoadingToast();
+            await new Promise(resolve => setTimeout(resolve, 2000)); 
+
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            loggedInUser = {
+                email: userCredential.user.email,
+                isPremium: false,
+                loginDate: new Date().toLocaleString()
+            };
+            localStorage.setItem(LOGGED_IN_USER_KEY, JSON.stringify(loggedInUser));
+            showLoggedInView();
+            showLoginToast(true);
+        } catch (error) {
+            showLoginToast(false);
+        }
+    });
+
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+        let email = document.getElementById('registerEmail').value.trim();
+        let password = document.getElementById('registerPassword').value.trim();
+
+        if (!email || !password) {
+            showToast('Semua field harus diisi!', false);
+            return;
+        }
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            users[email] = {
+                email: email,
+                isPremium: false
+            };
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+            showToast('Akun berhasil dibuat! Silakan login.', true);
+            showLogin();
+        } catch (error) {
+            showToast('Pendaftaran gagal: ' + error.message, false);
+        }
+    });
+
+    document.getElementById('showRegisterLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        loginCard.style.display = 'none';
+        registerCard.style.display = 'block';
+    });
+
+    document.getElementById('showLoginLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showLogin();
+    });
+
+    function showLogin() {
+        loginCard.style.display = 'block';
+        registerCard.style.display = 'none';
+    }
+
+    document.getElementById('ddosDashBtn').addEventListener('click', () => {
+        showDashboard('ddosCard');
+    });
+    document.getElementById('bugFromDdosBtn').addEventListener('click', () => {
+        showDashboard('saturnxCard');
+    });
+
+    document.getElementById('homeNavBtn').addEventListener('click', () => {
+        showPage('homePage');
+    });
+    document.getElementById('historyNavBtn').addEventListener('click', () => {
+        showPage('historyPage');
+    });
+    document.getElementById('profileNavBtn').addEventListener('click', () => {
+        showPage('profilePage');
+    });
+
+    const bugAttackButtons = document.querySelectorAll('.attack-btn');
+    const bugAttackMethodSelect = document.getElementById('bugAttackMethodSelect');
+
+    bugAttackButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const method = btn.getAttribute('data-method');
+            bugAttackMethodSelect.value = method;
+            showToast(`Metode ${method.toUpperCase()} dipilih!`, true);
+        });
+    });
+
+    document.getElementById('bugLaunchBtn').addEventListener('click', () => {
+        const target = document.getElementById('bugTargetNumber').value.trim();
+        const method = document.getElementById('bugAttackMethodSelect').value;
+        if (!target || !method) { showToast('Isi semua field!', false); return; }
+
+        popupText.innerHTML = `Mengirim laporan...<br>Mengirim ${method.toUpperCase()} ke<br>${target}`;
+        popupBar.style.display = 'block';
+        progress.style.width = '0%';
+        popup.style.display = 'flex';
+
+        let elapsed = 0;
+        const interval = setInterval(() => {
+            elapsed++;
+            const progressPercentage = Math.min(100, (elapsed / 15) * 100);
+            progress.style.width = progressPercentage + '%';
+            
+            if (elapsed >= 15) {
+                clearInterval(interval);
+                popupText.innerHTML = `Berhasil!<br>${method.toUpperCase()} berhasil dikirim.`;
+                popupBar.style.display = 'none';
+                addHistory('laporan', target, method);
+                setTimeout(() => { 
+                    popup.style.display = 'none'; 
+                }, 1000);
+            }
+        }, 1000);
+    });
+
+    document.getElementById('ddosLaunchBtn').addEventListener('click', () => {
+        const target = document.getElementById('ddosTargetIP').value.trim();
+        const method = document.getElementById('ddosMethod').value;
+        if (!target || !method) { showToast('Isi semua field!', false); return; }
+
+        popupText.innerHTML = `Menjalankan simulasi...<br>Mengirim ${method.toUpperCase()} ke<br>${target}`;
+        popupBar.style.display = 'block';
+        progress.style.width = '0%';
+        popup.style.display = 'flex';
+
+        let elapsed = 0;
+        const interval = setInterval(() => {
+            elapsed++;
+            const progressPercentage = Math.min(100, (elapsed / 15) * 100);
+            progress.style.width = progressPercentage + '%';
+            
+            if (elapsed >= 15) {
+                clearInterval(interval);
+                popupText.innerHTML = `Simulasi Berhasil!<br>${method.toUpperCase()} berhasil disimulasikan.`;
+                popupBar.style.display = 'none';
+                addHistory('simulasi', target, method);
+                setTimeout(() => { 
+                    popup.style.display = 'none'; 
+                }, 1000);
+            }
+        }, 1000);
+    });
+    
+    document.getElementById('saveProfileBtn').addEventListener('click', () => {
+        if (loggedInUser) {
+            localStorage.setItem(LOGGED_IN_USER_KEY, JSON.stringify(loggedInUser));
+            users[loggedInUser.email] = loggedInUser;
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+            
+            showToast('Profil berhasil disimpan!', true);
+        }
+    });
+
+    document.getElementById('profilePicInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const fileSizeInMB = file.size / (1024 * 1024);
+            if (fileSizeInMB > 2) {
+                showToast('Ukuran file terlalu besar! Maksimal 2MB.', false);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                profilePic.src = imageUrl;
+                
+                try {
+                    localStorage.setItem(PROFILE_PIC_KEY, imageUrl);
+                    fileBtnText.innerText = file.name;
+                    showToast('Foto profil berhasil diunggah dan disimpan!', true);
+                } catch (error) {
+                    showToast('Gagal menyimpan foto: Memori penuh. Coba foto yang lebih kecil.', false);
+                    console.error('Failed to save to localStorage:', error);
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+</body>
+</html>
