@@ -8,6 +8,9 @@
 <style>
 /* Disable text selection and zooming */
 body {
+  margin: 0;
+      padding: 0;
+      overflow: hidden;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -17,6 +20,25 @@ body {
     position: relative;
     padding-bottom: 70px; /* Space for the navbar */
 }
+
+.content {
+      position: relative;
+      z-index: 1;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    
+video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* biar pas layar, ga kegedean / kepotong aneh */
+      z-index: -1; /* selalu di belakang */
+    }
+
 
 /* General Styling */
 body {
@@ -350,6 +372,7 @@ a {
 </head>
 <body>
 
+
 <div class="main-content" style="padding-top: 20px;">
     <div class="card" id="loginCard">
         <h3>Login ARD-ZALLS</h3>
@@ -385,7 +408,7 @@ a {
                 <div style="font-size: 12px; color: #9a9a9a; margin-top: 5px;">ADMIN</div>
             </div>
             
-            <h4>Simulasi Pengiriman Laporan</h4>
+            <h4> Pengiriman Laporan</h4>
             <div class="attack-methods">
                 <button class="attack-btn" data-method="forceclose"><i class="fas fa-power-off"></i> FORCECLOSE</button>
                 <button class="attack-btn" data-method="uibug"><i class="fas fa-bug"></i> UI BUG</button>
@@ -408,7 +431,7 @@ a {
         </div>
 
         <div class="card" id="ddosCard" style="display:none;">
-            <h2>Simulasi DDOS</h2>
+            <h2> DDOS</h2>
 
             <button class="dash-btn" id="bugFromDdosBtn" style="margin-top: 20px;">
                 <i class="fas fa-bug"></i> ARD-ZALLS Dashboard
@@ -432,7 +455,7 @@ a {
             </select>
             
             <button id="ddosLaunchBtn" class="btn ddos-btn">
-                <i class="fas fa-radiation"></i> JALANKAN SIMULASI
+                <i class="fas fa-radiation"></i> JALANKAN 
             </button>
         </div>
     </div>
@@ -486,7 +509,10 @@ a {
         <span>Profil</span>
     </div>
 </div>
-
+   <video autoplay loop playsinline id="bgVideo">
+    <source src="https://files.catbox.moe/i39925.mp4" type="video/mp4">
+    Browser kamu tidak mendukung video tag.
+  </video>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
@@ -779,7 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const method = document.getElementById('ddosMethod').value;
         if (!target || !method) { showToast('Isi semua field!', false); return; }
 
-        popupText.innerHTML = `Menjalankan simulasi...<br>Mengirim ${method.toUpperCase()} ke<br>${target}`;
+        popupText.innerHTML = `Menjalankan ...<br>Mengirim ${method.toUpperCase()} ke<br>${target}`;
         popupBar.style.display = 'block';
         progress.style.width = '0%';
         popup.style.display = 'flex';
@@ -792,9 +818,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (elapsed >= 15) {
                 clearInterval(interval);
-                popupText.innerHTML = `Simulasi Berhasil!<br>${method.toUpperCase()} berhasil disimulasikan.`;
+                popupText.innerHTML = ` Berhasil!<br>${method.toUpperCase()} berhasil dikan.`;
                 popupBar.style.display = 'none';
-                addHistory('simulasi', target, method);
+                addHistory('', target, method);
                 setTimeout(() => { 
                     popup.style.display = 'none'; 
                 }, 1000);
@@ -839,6 +865,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Aktifkan suara setelah interaksi pertama
+    document.addEventListener("click", () => {
+      const video = document.getElementById("bgVideo");
+      video.muted = false;
+      video.play().catch(()=>{});
+    }, { once: true });
 </script>
 </body>
 </html>
