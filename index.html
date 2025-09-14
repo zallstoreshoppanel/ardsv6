@@ -3,14 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
-<title>ARD-ZALLS — Panel</title>
+<title>ARDS X TINI — Panel</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
 /* Disable text selection and zooming */
 body {
-  margin: 0;
-      padding: 0;
-      overflow: hidden;
+  
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -375,7 +373,7 @@ a {
 
 <div class="main-content" style="padding-top: 20px;">
     <div class="card" id="loginCard">
-        <h3>Login ARD-ZALLS</h3>
+        <h3>Login ARDS X TINI</h3>
         <input id="loginEmail" class="input" placeholder="Email" />
         <input id="loginPassword" class="input" placeholder="Password" type="password" />
         <button id="loginBtn" class="btn">Login</button>
@@ -392,8 +390,8 @@ a {
 
     <div id="homePage" style="display:none;">
         <div class="card" id="saturnxCard">
-            <img src="https://files.catbox.moe/obdbvf.png" class="banner" alt="Banner ARD-ZALLS">
-            <h2>ARD-ZALLS</h2>
+            <img src="https://files.catbox.moe/obdbvf.png" class="banner" alt="Banner ARDS X TINI">
+            <h2>ARDS X TINI</h2>
             
             <button class="dash-btn bug" id="bugDashBtn">
                 <i class="fas fa-bug"></i> Bug Dashboard
@@ -434,7 +432,7 @@ a {
             <h2> DDOS</h2>
 
             <button class="dash-btn" id="bugFromDdosBtn" style="margin-top: 20px;">
-                <i class="fas fa-bug"></i> ARD-ZALLS Dashboard
+                <i class="fas fa-bug"></i> ARDS X TINI Dashboard
             </button>
             <button class="dash-btn ddos" style="background:none; border: 1px solid #ff6f6f;">
                 <i class="fas fa-bolt"></i> DDOS Dashboard
@@ -509,10 +507,10 @@ a {
         <span>Profil</span>
     </div>
 </div>
-   <video autoplay loop playsinline id="bgVideo">
-    <source src="https://files.catbox.moe/i39925.mp4" type="video/mp4">
-    Browser kamu tidak mendukung video tag.
-  </video>
+   
+    <!-- Background Video -->
+  <video id="bgVideo" autoplay muted playsinline></video>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
@@ -872,6 +870,36 @@ document.addEventListener('DOMContentLoaded', () => {
       video.muted = false;
       video.play().catch(()=>{});
     }, { once: true });
+    
+    
+    const video = document.getElementById("bgVideo");
+
+    // Daftar video (bisa ganti URL sesuai kebutuhanmu)
+    const playlist = [
+      "https://files.catbox.moe/i39925.mp4",
+      "https://files.catbox.moe/cfk4v8.mp4",
+      "https://files.catbox.moe/lu91wz.mp4",
+      "https://files.catbox.moe/mpqiur.mp4",
+      "https://files.catbox.moe/rjgfnf.mp4"
+    ];
+
+    let current = 0;
+
+    // Fungsi load video
+    function loadVideo(index) {
+      video.src = playlist[index];
+      video.play();
+    }
+
+    // Saat video habis, ganti ke berikutnya
+    video.addEventListener("ended", () => {
+      current = (current + 1) % playlist.length; // looping
+      loadVideo(current);
+    });
+
+    // Start pertama
+    loadVideo(current);
+    
 </script>
 </body>
 </html>
