@@ -1,1 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ARDS V8 — Dashboard</title>
 
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --bg:#0b0014;
+      --card1:#240033;
+      --card2:#170024;
+      --accent:#a100ff;
+      --neon:#ff00ff;
+      --muted:#b8a5c7;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: 'Orbitron', sans-serif;
+      background:var(--bg);
+      color:#fff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding-bottom:86px; /* ruang navbar */
+    }
+
+    /* Header */
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 16px;
+      background: linear-gradient(180deg, rgba(18,0,31,0.96), rgba(18,0,31,0.9));
+      position:sticky;
+      top:0;
+      z-index:120;
+      border-bottom:1px solid rgba(161,0,255,0.06);
+    }
+    header h1{margin:0;font-size:1.05rem;letter-spacing:1px}
+    header .icon{font-size:18px;color:var(--muted);cursor:pointer}
+
+    /* Sidebar (hamburger) */
+    .sidebar{
+      position:fixed;top:0;left:-260px;width:240px;height:100%;
+      background:linear-gradient(145deg,var(--card1),var(--card2));
+      box-shadow:4px 0 16px rgba(0,0,0,0.5);
+      transition: left 0.28s ease;
+      z-index:130;padding:20px;
+    }
+    .sidebar.active{left:0;}
+    .sidebar h2{margin:0 0 12px;font-size:1rem;color:var(--neon)}
+    .sidebar a{display:block;padding:8px 0;color:#fff;text-decoration:none;font-size:14px}
+    .sidebar a:hover{color:var(--neon)}
+
+    /* Popup notif */
+    .overlay {
+      position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;z-index:250;
+      align-items:center;justify-content:center;padding:18px;
+    }
+    .overlay.show{display:flex}
+    .popup{
+      background:linear-gradient(145deg,var(--card1),var(--card2));
+      padding:18px 20px;border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,0.5);
+      max-width:420px;width:100%;text-align:center;transform:translateY(8px);opacity:0;transition:all .22s ease;
+    }
+    .overlay.show .popup{transform:translateY(0);opacity:1}
+    .popup h4{margin:0 0 8px;color:var(--neon);font-size:15px}
+    .popup p{margin:0;font-size:14px;color:var(--muted);white-space:pre-wrap}
+    .popup .actions{margin-top:12px;display:flex;gap:10px;justify-content:center}
+    .btn{padding:8px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+    /* Main container */
+    .container{padding:14px;max-width:1100px;margin:0 auto}
+
+    .hero{
+      border-radius:12px;padding:12px 14px;
+      background: linear-gradient(145deg,var(--card1),var(--card2));
+      box-shadow:0 6px 20px rgba(161,0,255,0.06);
+      margin-bottom:12px;
+    }
+    .hero h2{margin:0;color:var(--neon);font-size:1.05rem}
+    .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    /* menu grid kecil */
+    .menu-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+    .menu-item{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:6px;padding:10px;border-radius:10px;
+      background: linear-gradient(145deg,#2a003d,#170024);
+      box-shadow:0 6px 12px rgba(155,0,255,0.04);
+      text-decoration:none;color:#fff;font-size:12px;cursor:pointer;
+      transition: transform .12s ease, background .12s ease;
+      min-height:78px;
+    }
+    .menu-item i{font-size:18px;color:var(--neon)}
+    .menu-item small{color:var(--muted);display:block}
+    .menu-item:hover{transform:translateY(-6px);background:linear-gradient(145deg,#37004d,#240033)}
+    .menu-item.active{outline:2px solid rgba(255,0,255,0.08)}
+
+    /* server stats */
+    .server-stats{
+      margin:14px 0;padding:12px;border-radius:10px;background: linear-gradient(145deg,var(--card1),var(--card2));
+    }
+    .server-stats h3{margin:0 0 8px 0;font-size:14px}
+    .stats-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
+    .stats-row:first-of-type{border-top:0;padding-top:0}
+
+    /* BUG WhatsApp tools */
+    .bug-tools{margin:12px 0;padding:12px;border-radius:10px;background: linear-gradient(145deg,var(--card1),var(--card2));}
+    .bug-tools h3{margin:0 0 8px 0;color:var(--neon);font-size:14px}
+    .bug-tools .row{display:flex;gap:8px;flex-wrap:wrap}
+    .input{
+      flex:1;min-width:160px;padding:8px;border-radius:8px;border:none;outline:none;background:var(--glass);color:#fff;font-size:13px
+    }
+    .small-btn{
+      padding:8px 10px;border-radius:8px;background:var(--accent);border:none;color:#fff;font-size:12px;cursor:pointer;
+      transition:opacity .12s ease, transform .12s ease;
+    }
+    .small-btn:active{transform:translateY(1px)}
+    .small-btn[disabled]{opacity:0.5;cursor:not-allowed}
+
+    .bug-options{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .bug-option{flex:1;min-width:86px;padding:8px;border-radius:8px;background:#7f00d9;text-align:center;font-size:12px;cursor:pointer}
+    .bug-option.disabled{opacity:.6;cursor:not-allowed}
+
+    .progress-wrap{margin-top:10px;display:none}
+    .progress-bg{width:100%;height:12px;background:rgba(255,255,255,0.04);border-radius:10px;overflow:hidden}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--neon),var(--accent));transition:width .3s linear}
+
+    /* sections */
+    .section{display:none;margin-top:12px;padding:12px;border-radius:10px;background: linear-gradient(145deg,var(--card1),var(--card2))}
+    .section.active{display:block}
+    .section h3{margin:0 0 8px 0}
+
+    /* footer credit */
+    footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center;padding-bottom:12px}
+
+    /* bottom nav */
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg, rgba(18,0,31,0.98), rgba(18,0,31,0.95));display:flex;justify-content:space-around;padding:8px 6px;border-top:1px solid rgba(161,0,255,0.06);z-index:140}
+    .bottom-nav a{color:var(--muted);text-decoration:none;font-size:12px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+    .bottom-nav a i{font-size:18px}
+    .bottom-nav a.active{color:var(--neon)}
+    .bottom-nav a.active i{color:var(--neon)}
+
+    /* responsive */
+    @media(min-width:600px){.menu-grid{grid-template-columns:repeat(4,1fr)}}
+    @media(min-width:900px){.menu-grid{grid-template-columns:repeat(6,1fr)}}
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="icon" id="hamburger"><i class="fas fa-bars"></i></div>
+      <h1>ARDS V8</h1>
+    </div>
+    <div class="icon"><i class="fas fa-user"></i></div>
+  </header>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <h2>Menu</h2>
+    <a href="#" data-target="home">Home</a>
+    <a href="#" data-target="ddos">DDoS Panel</a>
+    <a href="#" data-target="bugwhatsapp">BUG WhatsApp</a>
+    <a href="#" data-target="chat">Chat</a>
+    <a href="#" data-target="account">Account</a>
+    <a href="#" data-target="spamngl">Spam NGL</a>
+    <a href="#" data-target="nikparse">NIK Parse</a>
+    <a href="#" data-target="subdomain">Subdomain Finder</a>
+    <a href="#" data-target="dbtools">DB Tools</a>
+    <a href="#" data-target="security">Security</a>
+  </div>
+
+  <!-- Popup / Notif -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="popup" role="dialog" aria-modal="true" id="popup">
+      <h4 id="popupTitle">Notification</h4>
+      <p id="popupMsg">Message</p>
+      <div class="actions">
+        <button class="btn" id="popupOk">OK</button>
+        <button class="btn ghost" id="popupClose">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="hero">
+      <h2>🔥 ARDS V8.1</h2>
+      <p>Developed By @ARDSDEV</p>
+    </section>
+
+    <div class="menu-grid" id="menuGrid">
+      <div class="menu-item" data-target="ddos"><i class="fas fa-bolt"></i><strong>DDoS</strong><small>Panel</small></div>
+      <div class="menu-item" data-target="bugwhatsapp"><i class="fab fa-whatsapp"></i><strong>BUG WhatsApp</strong><small>3 pilihan</small></div>
+      <div class="menu-item" data-target="chat"><i class="fas fa-comments"></i><strong>Chat</strong><small>Live</small></div>
+      <div class="menu-item" data-target="account"><i class="fas fa-user-cog"></i><strong>Account</strong><small>Profile</small></div>
+      <div class="menu-item" data-target="spamngl"><i class="fas fa-paper-plane"></i><strong>Spam NGL</strong><small>Tools</small></div>
+      <div class="menu-item" data-target="nikparse"><i class="fas fa-id-card"></i><strong>NIK Parse</strong><small>Service</small></div>
+      <div class="menu-item" data-target="subdomain"><i class="fas fa-network-wired"></i><strong>Subdomain</strong><small>Finder</small></div>
+      <div class="menu-item" data-target="dbtools"><i class="fas fa-database"></i><strong>DB Tools</strong><small>Backup</small></div>
+      <div class="menu-item" data-target="security"><i class="fas fa-shield-alt"></i><strong>Security</strong><small>Audit</small></div>
+    </div>
+
+    <div class="server-stats" aria-live="polite">
+      <h3>📊 Server Stats</h3>
+      <div class="stats-row"><div>Online Users</div><div id="onlineUsers">--</div></div>
+      <div class="stats-row"><div>Active Sender</div><div id="activeSender">--</div></div>
+      <div class="stats-row"><div>Server Load</div><div id="serverLoad">--</div></div>
+    </div>
+
+    <!-- Sections (single page) -->
+    <div id="sections">
+      <div id="home" class="section active">
+        <h3>Home</h3>
+        <p>Selamat datang di ARDS V8 — dashboard. Klik menu untuk membuka fitur.</p>
+      </div>
+
+      <div id="ddos" class="section">
+        <h3>DDoS Panel</h3>
+        <p>Isi target lalu jalankan.</p>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <input class="input" id="ddosTarget" placeholder="target (example.com)"/>
+          <button class="small-btn" onclick="simulateDDOS()">Start</button>
+        </div>
+        <pre id="ddosLog" style="margin-top:10px;color:var(--muted)"></pre>
+      </div>
+
+      <div id="bugwhatsapp" class="section">
+        <h3><i class="fab fa-whatsapp"></i> BUG WhatsApp</h3>
+        <p>Pilih salah satu dari 3 pilihan bug. Harus isi nomor terlebih dahulu.</p>
+
+        <div style="margin-top:8px" class="row">
+          <input id="waTarget" class="input" placeholder="Masukkan nomor WhatsApp (+62...)" />
+          <button class="small-btn" id="waClear" onclick="document.getElementById('waTarget').value='';">Clear</button>
+        </div>
+
+        <div class="bug-options" id="waOptions">
+          <div class="bug-option" data-mode="UI Bug">UI Bug</div>
+          <div class="bug-option" data-mode="Spam Bug">Spam Bug</div>
+          <div class="bug-option" data-mode="Brutal Bug">Brutal Bug</div>
+        </div>
+
+        <div class="progress-wrap" id="waProgressWrap">
+          <div class="progress-bg"><div class="progress-bar" id="waProgressBar"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px">
+            <div id="waStatus">Idle</div>
+            <div id="waPercent">0%</div>
+          </div>
+        </div>
+
+        <pre id="waLog" style="margin-top:10px;color:var(--muted)"></pre>
+      </div>
+
+      <div id="chat" class="section">
+        <h3>Chat</h3>
+        <div style="margin-top:8px;background:var(--glass);padding:10px;border-radius:8px;height:140px;overflow:auto" id="chatBox"></div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input id="chatInput" class="input" placeholder="Tulis pesan..." />
+          <button class="small-btn" onclick="sendChat()">Kirim</button>
+        </div>
+      </div>
+
+      <div id="account" class="section">
+        <h3>Account</h3>
+        <p>Profile:</p>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <div class="input" style="max-width:280px;">Username: guest_user</div>
+          <div class="input" style="max-width:200px;">Role: Member</div>
+        </div>
+      </div>
+
+      <div id="spamngl" class="section">
+        <h3>Spam NGL</h3>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <input id="nglTarget" class="input" placeholder="Target" />
+          <input id="nglMsg" class="input" placeholder="Pesan" />
+          <button class="small-btn" onclick="simulateSpam()">Kirim</button>
+        </div>
+        <pre id="nglLog" style="margin-top:10px;color:var(--muted)"></pre>
+      </div>
+
+      <div id="nikparse" class="section">
+        <h3>NIK Parse</h3>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input id="nikInput" class="input" placeholder="NIK..." />
+          <button class="small-btn" onclick="parseNIK()">Parse</button>
+        </div>
+        <pre id="nikResult" style="margin-top:10px;color:var(--muted)"></pre>
+      </div>
+
+      <div id="subdomain" class="section">
+        <h3>Subdomain Finder</h3>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input id="subInput" class="input" placeholder="example.com" />
+          <button class="small-btn" onclick="findSubdomains()">Start</button>
+        </div>
+        <pre id="subResult" style="margin-top:10px;color:var(--muted)"></pre>
+      </div>
+
+      <div id="dbtools" class="section">
+        <h3>DB Tools</h3>
+        <p>Toolset database — backup / restore.</p>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="small-btn" onclick="fakeDB('backup')">Backup</button>
+          <button class="small-btn" onclick="fakeDB('restore')">Restore</button>
+        </div>
+        <pre id="dbLog" style="margin-top:10px;color:var(--muted)"></pre>
+      </div>
+
+      <div id="security" class="section">
+        <h3>Security</h3>
+        <p>Audit & checks.</p>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="small-btn" onclick="fakeAudit()">Run Audit</button>
+        </div>
+        <pre id="secLog" style="margin-top:10px;color:var(--muted)"></pre>
+      </div>
+    </div>
+
+    <footer>© <strong>ARDS V8</strong> • Dev: <a href="#" style="color:var(--neon);text-decoration:none">@ARDSDEV</a></footer>
+  </main>
+
+  <!-- bottom nav -->
+  <nav class="bottom-nav" aria-label="Bottom navigation">
+    <a href="#" data-target="home" class="active"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="#" data-target="ddos"><i class="fas fa-phone"></i><span>Call</span></a>
+    <a href="#" data-target="ddos"><i class="fas fa-bolt"></i><span>Attack</span></a>
+    <a href="#" data-target="chat"><i class="fas fa-comment"></i><span>Chat</span></a>
+    <a href="#" data-target="account"><i class="fas fa-cog"></i><span>Settings</span></a>
+  </nav>
+
+  <script>
+    // -------------------
+    // Elements
+    // -------------------
+    const menuItems = document.querySelectorAll('.menu-item');
+    const bottomLinks = document.querySelectorAll('.bottom-nav a');
+    const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+    const overlay = document.getElementById('overlay');
+    const popup = document.getElementById('popup');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupMsg = document.getElementById('popupMsg');
+    const popupOk = document.getElementById('popupOk');
+    const popupClose = document.getElementById('popupClose');
+
+    // -------------------
+    // Popup helpers (replaces alert)
+    // -------------------
+    function showPopup(title, msg, onOk=null){
+      popupTitle.textContent = title || "Notification";
+      popupMsg.textContent = msg || "";
+      overlay.classList.add('show');
+      popupOk.onclick = () => { overlay.classList.remove('show'); if(typeof onOk === 'function') onOk(); };
+      popupClose.onclick = () => { overlay.classList.remove('show'); };
+    }
+    // override global alert to use popup
+    window.alert = function(msg){ showPopup('Notification', String(msg)); }
+
+    // -------------------
+    // Sidebar / hamburger
+    // -------------------
+    hamburger.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+    });
+    // sidebar menu links
+    document.querySelectorAll('.sidebar a').forEach(a=>{
+      a.addEventListener('click', e=>{
+        e.preventDefault();
+        const t = a.dataset.target || 'home';
+        showSection(t);
+        sidebar.classList.remove('active');
+      });
+    });
+
+    // -------------------
+    // Navigation behaviour
+    // -------------------
+    function showSection(id){
+      // hide all sections
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      // show requested
+      const el = document.getElementById(id);
+      if(el) el.classList.add('active');
+      // active states for menu grid
+      menuItems.forEach(mi => mi.classList.toggle('active', mi.dataset.target === id));
+      // bottom nav active
+      bottomLinks.forEach(a => a.classList.toggle('active', a.dataset.target === id));
+      // scroll to top for mobile
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // attach click for menu items
+    menuItems.forEach(mi => {
+      mi.addEventListener('click', () => {
+        const t = mi.dataset.target || 'home';
+        showSection(t);
+      });
+      // keyboard access
+      mi.setAttribute('tabindex','0');
+      mi.addEventListener('keydown', e => { if(e.key==='Enter') mi.click(); });
+    });
+
+    // bottom nav clicks
+    bottomLinks.forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const t = a.dataset.target || 'home';
+        showSection(t);
+      });
+    });
+
+    // ensure home shown initially
+    showSection('home');
+
+    // -------------------
+    // Server stats random
+    // -------------------
+    function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function refreshStats(){
+      document.getElementById('onlineUsers').innerText = rand(5,320);
+      document.getElementById('activeSender').innerText = rand(0,30);
+      document.getElementById('serverLoad').innerText = rand(5,99)+'%';
+    }
+    refreshStats();
+    setInterval(refreshStats, 12000);
+
+    // -------------------
+    // DDoS UI-only action (no network)
+    // -------------------
+    function simulateDDOS(){
+      const target = document.getElementById('ddosTarget').value || '';
+      if(!target){
+        showPopup('Perhatian','Masukkan target terlebih dahulu.');
+        return;
+      }
+      const log = document.getElementById('ddosLog');
+      log.textContent = `Attacking ${target} ...`;
+      setTimeout(()=> log.textContent += `\nResult: Finished.`, 1400);
+      showPopup('DDoS','Proses attack ke ' + target + ' telah dijalankan (UI-only).');
+    }
+
+    // -------------------
+    // BUG WhatsApp: 3 modes, require number, 20s progress (UI-only)
+    // -------------------
+    const waOptions = document.querySelectorAll('#waOptions .bug-option');
+    const waProgressWrap = document.getElementById('waProgressWrap');
+    const waProgressBar = document.getElementById('waProgressBar');
+    const waStatus = document.getElementById('waStatus');
+    const waPercent = document.getElementById('waPercent');
+    const waLog = document.getElementById('waLog');
+
+    let waTimer = null;
+
+    waOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        const mode = opt.dataset.mode;
+        startWaBug(mode);
+      });
+    });
+
+    function startWaBug(mode){
+      const num = document.getElementById('waTarget').value.trim();
+      if(!num){
+        showPopup('Perhatian','Masukkan nomor WhatsApp terlebih dahulu.');
+        document.getElementById('waTarget').focus();
+        return;
+      }
+
+      // prevent multiple runs
+      if(waTimer) return;
+
+      // disable options while running
+      waOptions.forEach(o => o.classList.add('disabled'));
+      waProgressWrap.style.display = 'block';
+      waProgressBar.style.width = '0%';
+      waStatus.textContent = 'Memproses...';
+      waPercent.textContent = '0%';
+      waLog.textContent = `Started ${mode} on ${num} at ${new Date().toLocaleTimeString()}`;
+
+      const total = 20; // seconds
+      let elapsed = 0;
+      waTimer = setInterval(() => {
+        elapsed++;
+        const p = Math.min(100, Math.round((elapsed/total)*100));
+        waProgressBar.style.width = p + '%';
+        waPercent.textContent = p + '%';
+        if(elapsed % 5 === 0){
+          waLog.textContent += `\n[${new Date().toLocaleTimeString()}] progress ${p}%`;
+        }
+        if(elapsed >= total){
+          clearInterval(waTimer);
+          waTimer = null;
+          waStatus.textContent = 'Sukses';
+          waLog.textContent += `\nCompleted at ${new Date().toLocaleTimeString()}. Output: Success.`;
+          waOptions.forEach(o => o.classList.remove('disabled'));
+          showPopup('Selesai', `${mode} ke ${num} selesai.`, ()=>{ /* OK callback */ });
+        }
+      }, 1000);
+    }
+
+    // -------------------
+    // Chat
+    // -------------------
+    function sendChat(){
+      const txt = document.getElementById('chatInput').value.trim();
+      if(!txt) return;
+      const box = document.getElementById('chatBox');
+      const p = document.createElement('div');
+      p.style.marginBottom = '8px';
+      p.innerHTML = `<strong style="color:#ffb6ff">You:</strong> ${escapeHtml(txt)}`;
+      box.appendChild(p);
+      box.scrollTop = box.scrollHeight;
+      document.getElementById('chatInput').value = '';
+      // auto reply
+      setTimeout(()=> {
+        const r = document.createElement('div');
+        r.style.marginBottom = '8px';
+        r.innerHTML = `<strong style="color:#a0a0ff">Bot:</strong> Pesan diterima.`;
+        box.appendChild(r);
+        box.scrollTop = box.scrollHeight;
+      }, 800);
+    }
+
+    // -------------------
+    // Spam NGL (UI-only)
+    // -------------------
+    function simulateSpam(){
+      const tgt = document.getElementById('nglTarget').value || '';
+      const msg = document.getElementById('nglMsg').value || '';
+      if(!tgt || !msg){
+        showPopup('Perhatian','Isi target dan pesan terlebih dahulu.');
+        return;
+      }
+      const log = document.getElementById('nglLog');
+      log.textContent = `Sending to ${tgt}...\nMessage: ${msg}\nStatus: Sent`;
+      showPopup('Spam NGL','Pengiriman pesan telah dijalankan (UI-only).');
+    }
+
+    // -------------------
+    // NIK parse
+    // -------------------
+    function parseNIK(){
+      const nik = document.getElementById('nikInput').value || '';
+      if(!nik){
+        showPopup('Perhatian','Masukkan NIK terlebih dahulu.');
+        return;
+      }
+      const out = document.getElementById('nikResult');
+      const fake = { nik: nik, name: 'Nama Contoh', dob: '1990-01-01', gender: (parseInt(nik.slice(-1))%2? 'Male' : 'Female'), province: 'Jawa Barat' };
+      out.textContent = JSON.stringify(fake,null,2);
+      showPopup('NIK Parse','Parsing NIK selesai.');
+    }
+
+    // -------------------
+    // Subdomain finder
+    // -------------------
+    function findSubdomains(){
+      const d = document.getElementById('subInput').value || '';
+      if(!d){
+        showPopup('Perhatian','Masukkan domain terlebih dahulu.');
+        return;
+      }
+      const out = document.getElementById('subResult');
+      out.textContent = `Searching ${d} ...\nFound:\n- api.${d}\n- dev.${d}\n- test.${d}`;
+      showPopup('Subdomain Finder','Pencarian subdomain selesai.');
+    }
+
+    // -------------------
+    // DB & Security actions (UI-only)
+    // -------------------
+    function fakeDB(action){
+      const out = document.getElementById('dbLog');
+      out.textContent = `DB ${action} started...\nResult: OK`;
+      showPopup('DB Tools', `DB ${action} completed.`);
+    }
+    function fakeAudit(){
+      const out = document.getElementById('secLog');
+      out.textContent = `Running security audit...\nNo critical issues found.`;
+      showPopup('Security', 'Audit selesai.');
+    }
+
+    // -------------------
+    // helpers
+    // -------------------
+    function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+
+    // keyboard enter for forms
+    document.getElementById('chatInput').addEventListener('keydown', (e)=> { if(e.key==='Enter') sendChat(); });
+    document.getElementById('ddosTarget').addEventListener('keydown', (e)=> { if(e.key==='Enter') simulateDDOS(); });
+    document.getElementById('nikInput').addEventListener('keydown', (e)=> { if(e.key==='Enter') parseNIK(); });
+    document.getElementById('subInput').addEventListener('keydown', (e)=> { if(e.key==='Enter') findSubdomains(); });
+
+    // set initial accessible attributes, ensure menu keyboard accessible
+    menuItems.forEach(mi => {
+      mi.setAttribute('tabindex','0');
+      mi.addEventListener('keydown', e => { if(e.key==='Enter') mi.click(); });
+    });
+
+    // close overlay on click outside popup
+    overlay.addEventListener('click', (e)=> { if(e.target === overlay) overlay.classList.remove('show'); });
+
+  </script>
+</body>
+</html>
